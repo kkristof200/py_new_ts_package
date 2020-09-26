@@ -111,7 +111,8 @@ def create_gitignore(path: str, to_ignore: List[str]):
 
 # FLOW
 HOME_DIR = sh('echo $HOME')[1].strip()
-config = loadJson(os.path.join(HOME_DIR, '.npmconfig.json')) or {}
+config_path = os.path.join(HOME_DIR, '.ntpconfig.json')
+config = loadJson(config_path) or {}
 config['version'] = config['version'] if 'version' in config and config['version'] else '1.0.0'
 config['author'] = config['author'] if 'author' in config else None
 config['package'] = config['package'] if 'package' in config and config['package'] else {
