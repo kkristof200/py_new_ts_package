@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-
 # IMPORTS
 from typing import Optional, List
 import os, json
@@ -159,6 +158,8 @@ if git_url:
 
 src_path = os.path.join(os.getcwd(), 'src')
 index_path = os.path.join(src_path, 'index.ts')
+package_folder_path = os.path.join(src_path, package_name)
+package_main_file_path = os.path.join(package_folder_path, package_name + '.ts')
 readme_path = os.path.join(os.getcwd(), 'README.md')
 license_path = os.path.join(os.getcwd(), 'LICENSE')
 package_json_path = os.path.join(os.getcwd(), 'package.json')
@@ -166,10 +167,14 @@ tsconfig_json_path = os.path.join(os.getcwd(), 'tsconfig.json')
 gitignore_path = os.path.join(os.getcwd(), '.gitignore')
 npmgitignore_path = os.path.join(os.getcwd(), '.npmgitignore')
 
-os.makedirs(src_path, exist_ok=True)
+os.makedirs(package_main_file_path, exist_ok=True)
 
 if not os.path.exists(index_path):
-    with open(index_path, 'w'):
+    with open(index_path, 'w') as f:
+        f.write('export \'./' + package_name + '/' + package_name + '\'')
+
+if not os.path.exists(package_main_file_path):
+    with open(package_main_file_path, 'w'):
         pass
 
 if not os.path.exists(readme_path):
