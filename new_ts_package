@@ -171,7 +171,7 @@ os.makedirs(package_folder_path, exist_ok=True)
 
 if not os.path.exists(index_path):
     with open(index_path, 'w') as f:
-        f.write('export \'./' + package_name + '/' + package_name + '\'')
+        f.write('export * from \'./' + package_name + '/' + package_name + '\'')
 
 if not os.path.exists(package_main_file_path):
     with open(package_main_file_path, 'w'):
