@@ -183,7 +183,7 @@ if not os.path.exists(readme_path):
     if description:
         readme += '\n' + description
     
-    readme += '\n## Install\n```bash\nnpm i ' + package_name + '\n```'
+    readme += '\n## Install\n```bash\nnpm i ' + package_name + '\n```\n## Usage\n```typescript\n```'
 
     with open(readme_path, 'w') as f:
         f.write(readme)
