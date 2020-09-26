@@ -219,5 +219,12 @@ print(sh('tsc --init')[1])
 if config['tsconfig']:
     saveJson(tsconfig_json_path, config['tsconfig'], override=True)
 
-for needed_module in config['needed_modules']:
+extra_packages_str = readInput('Add extra packages to install. (\',\' separated)')
+needed_modules = config['needed_modules'] or []
+
+if extra_packages_str:
+    for package_name in [p for p in [p.strip() for p in extra_packages_str.split(',')] if len(p) > 0 and p not in needed_modules]:
+        needed_modules.append(package_name)
+
+for needed_module in needed_modules:
     print(sh('npm i ' + needed_module)[1])
