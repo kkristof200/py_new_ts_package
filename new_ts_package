@@ -1,0 +1,225 @@
+#!/usr/bin/env python3
+
+
+# IMPORTS
+from typing import Optional, List
+import os, json
+from datetime import datetime
+
+# FUNCTIONS
+def sh(cmd: str):
+    import subprocess
+
+    return subprocess.getstatusoutput(cmd)
+
+def loadJson(path: str) -> Optional[dict]:
+    try:
+        with open(path, 'r') as f:
+            return json.load(f)
+    except:
+        return None
+
+def saveJsonIfNotExists(path: str, obj: any) -> bool:
+    if os.path.exists(path):
+        return True
+
+    try:
+        with open(path, 'w') as f:
+            json.dump(obj, f, indent=4)
+
+        return True
+    except:
+        return False
+
+def get_arg_from_file(path: str, splitter: str) -> Optional[str]:
+    if not os.path.exists(path):
+        return None
+    
+    try:
+        with open(path, 'r') as f:
+            for line in f.readlines():
+                if splitter in line:
+                    return line.split(splitter)[1].strip()
+    except Exception as e:
+        print(e)
+        return None
+    
+    return None
+
+def get_git_username() -> Optional[str]:
+    home_dir = sh('echo $HOME')[1].strip()
+    global_gitconfig_path = os.path.join(home_dir, '.gitconfig')
+    local_gitconfig_path = os.path.join(os.getcwd(), '.git/config')
+    splitter = 'name = '
+
+    return get_arg_from_file(local_gitconfig_path, splitter) or get_arg_from_file(global_gitconfig_path, splitter)
+
+def get_git_url() -> Optional[str]:
+    local_gitconfig_path = os.path.join(os.getcwd(), '.git/config')
+    splitter = 'url = '
+
+    url = get_arg_from_file(local_gitconfig_path, splitter)
+
+    if url is None:
+        return None
+    
+    return url.replace('.git', '').strip('/')
+
+def get_suggested_package_names() -> str:
+    url = get_git_url() or os.getcwd()
+
+    return url.split('/')[-1]
+
+def readInput(message: str, fallbackOptions: Optional[List[Optional[str]]] = None):
+    message = message.strip()
+
+    fallbackOption = None
+
+    if fallbackOptions:
+        for option in fallbackOptions:
+            if option:
+                fallbackOption = option
+
+                break
+
+    if fallbackOption:
+        message += ' [DEFAULT: \'' + fallbackOption + '\']: '
+    elif message.endswith(':'):
+        message += ' '
+    else:
+        message += ': '
+    
+    res = input(message)
+
+    return res if len(res) > 0 else fallbackOption
+
+def create_gitignore(path: str, to_ignore: List[str]):
+    gitignore = ''
+
+    if os.path.exists(path):
+        with open(path, 'r') as f:
+            gitignore = f.read()
+
+    gitignore_lines = [line.strip() for line in gitignore.split('\n')]
+    to_add = [name.strip() for name in to_ignore if name not in gitignore_lines]
+
+    if len(to_add) > 0:
+        gitignore = '# Added by ntp stript\n' + '\n'.join(to_add) + '\n\n\n' + gitignore
+
+    with open(path, 'w') as f:
+        f.write(gitignore.strip())
+
+# FLOW
+HOME_DIR = sh('echo $HOME')[1].strip()
+config = loadJson(os.path.join(HOME_DIR, '.npmconfig.json')) or {}
+config['version'] = config['version'] if 'version' in config and config['version'] else '1.0.0'
+config['author'] = config['author'] if 'author' in config else None
+config['package'] = config['package'] if 'package' in config and config['package'] else {
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "prepublish": "tsc",
+        "build": "tsc",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": ""
+    },
+    "license": "ISC",
+    "dependencies": {
+        "@types/node": "^14.6.0",
+        "typescript": "^4.0.2"
+    },
+    "publishConfig": {
+        "access": "public"
+    }
+}
+config['tsconfig'] = config['tsconfig'] if 'tsconfig' in config and config['tsconfig'] else {
+    "compilerOptions": {
+        "emitDecoratorMetadata": True,
+        "experimentalDecorators": True,
+        "resolveJsonModule": True,
+        "module": "commonjs",
+        "esModuleInterop": True,
+        "target": "es6",
+        "noImplicitAny": True,
+        "moduleResolution": "node",
+        "sourceMap": True,
+        "outDir": "dist",
+        "baseUrl": ".",
+        "declaration": True,
+        "paths": {
+            "*": [
+                "node_modules/*"
+            ]
+        }
+    },
+    "include": [
+        "src/**/*"
+    ]
+}
+config['.npmgitignore'] = config['.npmgitignore'] if '.npmgitignore' in config and config['.npmgitignore'] else ["tsconfig.json",  "src", ".*.swp", "._*", ".DS_Store", ".git", ".hg", ".npmrc", ".lock-wscript", ".svn", ".wafpickle-*", "config.gypi", "CVS", "npm-debug.log"]
+config['.gitignore'] = config['.gitignore'] if '.gitignore' in config and config['.gitignore'] else ["dist", "node_modules", "package-lock.json", ".DS_Store", "logs", "*.log", "npm-debug.log*", "yarn-debug.log*", "yarn-error.log*", "lerna-debug.log*", "report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json", "pids", "*.pid", "*.seed", "*.pid.lock", "lib-cov", "coverage", "*.lcov", ".nyc_output", ".grunt", "bower_components", ".lock-wscript", "build/Release", "node_modules/", "jspm_packages/", "typings/", "*.tsbuildinfo", ".npm", ".eslintcache", ".rpt2_cache/", ".rts2_cache_cjs/", ".rts2_cache_es/", ".rts2_cache_umd/", ".node_repl_history", "*.tgz", ".yarn-integrity", ".env", ".env.test", ".cache", ".next", ".nuxt", "dist", ".cache/", ".vuepress/dist", ".serverless/", ".fusebox/", ".dynamodb/", ".tern-port"]
+config['needed_modules'] = config['needed_modules'] if 'needed_modules' in config and config['needed_modules'] else ["typescript", "@types/node"]
+
+input('Current path: ' + os.getcwd() + '\nPlease ensure you\'re in the correct folder ')
+
+package_name = readInput('Enter package name', [get_suggested_package_names()])
+author_name = readInput('Enter author name', [config['author'], get_git_username()])
+version = readInput('Enter version', [config['version']])
+
+
+src_path = os.path.join(os.getcwd(), 'src')
+index_path = os.path.join(src_path, 'index.ts')
+readme_path = os.path.join(os.getcwd(), 'README.md')
+license_path = os.path.join(os.getcwd(), 'LICENSE')
+package_json_path = os.path.join(os.getcwd(), 'package.json')
+tsconfig_json_path = os.path.join(os.getcwd(), 'tsconfig.json')
+gitignore_path = os.path.join(os.getcwd(), '.gitignore')
+npmgitignore_path = os.path.join(os.getcwd(), '.npmgitignore')
+
+os.makedirs(src_path, exist_ok=True)
+
+if not os.path.exists(index_path):
+    with open(index_path, 'w'):
+        pass
+
+if not os.path.exists(readme_path):
+    with open(readme_path, 'w'):
+        pass
+
+create_gitignore(gitignore_path, config['.gitignore'])
+create_gitignore(npmgitignore_path, config['.npmgitignore'])
+
+saveJsonIfNotExists(package_json_path, config['package'])
+saveJsonIfNotExists(tsconfig_json_path, config['tsconfig'])
+
+if not os.path.exists(license_path):
+    mit_license = '''MIT License
+
+Copyright (c) ''' + str(datetime.now().year) + ' ' + author_name + '''
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.'''
+
+    with open(license_path, 'w') as f:
+        f.write(mit_license)
+
+for needed_module in config['needed_modules']:
+    sh('npm i ' + needed_module)
