@@ -219,7 +219,8 @@ SOFTWARE.'''
     with open(license_path, 'w') as f:
         f.write(mit_license)
 
-print(sh('tsc --init')[1])
+if not os.path.exists(tsconfig_json_path):
+    print(sh('tsc --init')[1])
 
 if config['tsconfig']:
     saveJson(tsconfig_json_path, config['tsconfig'], override=True)
