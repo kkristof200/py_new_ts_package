@@ -146,11 +146,12 @@ input('Current path: ' + os.getcwd() + '\nPlease ensure you\'re in the correct f
 package_name = readInput('Enter package name', [get_suggested_package_names()])
 author_name = readInput('Enter author name', [config['author'], get_git_username()])
 version = readInput('Enter version', [config['version']])
+description = readInput('Enter description')
 config['package']['author'] = author_name
 config['package']['name'] = package_name
 config['package']['version'] = version
-
-description = readInput('Enter description')
+if description:
+    config['package']['description'] = description
 
 git_url = get_git_url()
 if git_url:
