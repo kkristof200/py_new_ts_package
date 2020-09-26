@@ -176,7 +176,7 @@ if not os.path.exists(readme_path):
     readme = '# ' + package_name
 
     if description:
-        readme += '\n## Description\n' + description
+        readme += '\n' + description
     
     readme += '\n## Install\n```bash\nnpm i ' + package_name + '\n```'
 
