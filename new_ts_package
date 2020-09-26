@@ -168,7 +168,9 @@ input('Current path: ' + os.getcwd() + '\nPlease ensure you\'re in the correct f
 package_name = readInput('Enter package name', [get_suggested_package_names()])
 author_name = readInput('Enter author name', [config['author'], get_git_username()])
 version = readInput('Enter version', [config['version']])
-
+config['package']['author'] = author_name
+config['package']['name'] = package_name
+config['package']['version'] = version
 
 src_path = os.path.join(os.getcwd(), 'src')
 index_path = os.path.join(src_path, 'index.ts')
