@@ -174,7 +174,7 @@ if not os.path.exists(readme_path):
         f.write(
 '# ' + package_name + '''
 
-# Install
+## Install
 ```bash
 npm i ''' + package_name + '\n```')
 
