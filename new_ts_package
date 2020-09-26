@@ -170,8 +170,13 @@ if not os.path.exists(index_path):
         pass
 
 if not os.path.exists(readme_path):
-    with open(readme_path, 'w'):
-        pass
+    with open(readme_path, 'w') as f:
+        f.write(
+'# ' + package_name + '''
+
+# Install
+```bash
+npm i ''' + package_name + '\n```')
 
 create_gitignore(gitignore_path, config['.gitignore'])
 create_gitignore(npmgitignore_path, config['.npmgitignore'])
