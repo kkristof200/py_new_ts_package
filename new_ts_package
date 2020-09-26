@@ -19,13 +19,13 @@ def loadJson(path: str) -> Optional[dict]:
     except:
         return None
 
-def saveJsonIfNotExists(path: str, obj: any) -> bool:
-    if os.path.exists(path):
+def saveJson(path: str, obj: any, override: bool = False) -> bool:
+    if os.path.exists(path) and not override:
         return True
 
     try:
         with open(path, 'w') as f:
-            json.dump(obj, f, indent=4)
+            json.dump(obj, f, indent=4, ensure_ascii=False)
 
         return True
     except:
@@ -113,7 +113,7 @@ def create_gitignore(path: str, to_ignore: List[str]):
 HOME_DIR = sh('echo $HOME')[1].strip()
 config_path = os.path.join(HOME_DIR, '.ntpconfig.json')
 config = loadJson(config_path) or {}
-config['version'] = config['version'] if 'version' in config and config['version'] else '1.0.0'
+config['version'] = config['version'] if 'version' in config and config['version'] else '0.0.1'
 config['author'] = config['author'] if 'author' in config else None
 config['package'] = config['package'] if 'package' in config and config['package'] else {
     "main": "dist/index.js",
@@ -136,30 +136,7 @@ config['package'] = config['package'] if 'package' in config and config['package
         "access": "public"
     }
 }
-config['tsconfig'] = config['tsconfig'] if 'tsconfig' in config and config['tsconfig'] else {
-    "compilerOptions": {
-        "emitDecoratorMetadata": True,
-        "experimentalDecorators": True,
-        "resolveJsonModule": True,
-        "module": "commonjs",
-        "esModuleInterop": True,
-        "target": "es6",
-        "noImplicitAny": True,
-        "moduleResolution": "node",
-        "sourceMap": True,
-        "outDir": "dist",
-        "baseUrl": ".",
-        "declaration": True,
-        "paths": {
-            "*": [
-                "node_modules/*"
-            ]
-        }
-    },
-    "include": [
-        "src/**/*"
-    ]
-}
+config['tsconfig'] = config['tsconfig'] if 'tsconfig' in config else None
 config['.npmgitignore'] = config['.npmgitignore'] if '.npmgitignore' in config and config['.npmgitignore'] else ["tsconfig.json",  "src", ".*.swp", "._*", ".DS_Store", ".git", ".hg", ".npmrc", ".lock-wscript", ".svn", ".wafpickle-*", "config.gypi", "CVS", "npm-debug.log"]
 config['.gitignore'] = config['.gitignore'] if '.gitignore' in config and config['.gitignore'] else ["dist", "node_modules", "package-lock.json", ".DS_Store", "logs", "*.log", "npm-debug.log*", "yarn-debug.log*", "yarn-error.log*", "lerna-debug.log*", "report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json", "pids", "*.pid", "*.seed", "*.pid.lock", "lib-cov", "coverage", "*.lcov", ".nyc_output", ".grunt", "bower_components", ".lock-wscript", "build/Release", "node_modules/", "jspm_packages/", "typings/", "*.tsbuildinfo", ".npm", ".eslintcache", ".rpt2_cache/", ".rts2_cache_cjs/", ".rts2_cache_es/", ".rts2_cache_umd/", ".node_repl_history", "*.tgz", ".yarn-integrity", ".env", ".env.test", ".cache", ".next", ".nuxt", "dist", ".cache/", ".vuepress/dist", ".serverless/", ".fusebox/", ".dynamodb/", ".tern-port"]
 config['needed_modules'] = config['needed_modules'] if 'needed_modules' in config and config['needed_modules'] else ["typescript", "@types/node"]
@@ -172,6 +149,10 @@ version = readInput('Enter version', [config['version']])
 config['package']['author'] = author_name
 config['package']['name'] = package_name
 config['package']['version'] = version
+
+git_url = get_git_url()
+if git_url:
+    config['package']['repository']['url'] = git_url
 
 src_path = os.path.join(os.getcwd(), 'src')
 index_path = os.path.join(src_path, 'index.ts')
@@ -196,7 +177,7 @@ create_gitignore(gitignore_path, config['.gitignore'])
 create_gitignore(npmgitignore_path, config['.npmgitignore'])
 
 saveJsonIfNotExists(package_json_path, config['package'])
-saveJsonIfNotExists(tsconfig_json_path, config['tsconfig'])
+# saveJsonIfNotExists(tsconfig_json_path, config['tsconfig'])
 
 if not os.path.exists(license_path):
     mit_license = '''MIT License
@@ -224,5 +205,10 @@ SOFTWARE.'''
     with open(license_path, 'w') as f:
         f.write(mit_license)
 
+print(sh('tsc --init')[1])
+
+if config['tsconfig']:
+    saveJson(tsconfig_json_path, config['tsconfig'], override=True)
+
 for needed_module in config['needed_modules']:
-    sh('npm i ' + needed_module)
+    print(sh('npm i ' + needed_module)[1])
