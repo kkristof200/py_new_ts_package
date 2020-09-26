@@ -167,7 +167,7 @@ tsconfig_json_path = os.path.join(os.getcwd(), 'tsconfig.json')
 gitignore_path = os.path.join(os.getcwd(), '.gitignore')
 npmgitignore_path = os.path.join(os.getcwd(), '.npmgitignore')
 
-os.makedirs(package_main_file_path, exist_ok=True)
+os.makedirs(package_folder_path, exist_ok=True)
 
 if not os.path.exists(index_path):
     with open(index_path, 'w') as f:
