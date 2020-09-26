@@ -118,7 +118,7 @@ config['package'] = config['package'] if 'package' in config and config['package
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "scripts": {
-        "prepublish": "tsc",
+        "prepare": "tsc",
         "build": "tsc",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
