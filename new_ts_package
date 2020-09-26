@@ -176,8 +176,7 @@ if not os.path.exists(readme_path):
 create_gitignore(gitignore_path, config['.gitignore'])
 create_gitignore(npmgitignore_path, config['.npmgitignore'])
 
-saveJsonIfNotExists(package_json_path, config['package'])
-# saveJsonIfNotExists(tsconfig_json_path, config['tsconfig'])
+saveJson(package_json_path, config['package'])
 
 if not os.path.exists(license_path):
     mit_license = '''MIT License
