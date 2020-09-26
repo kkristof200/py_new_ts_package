@@ -150,6 +150,8 @@ config['package']['author'] = author_name
 config['package']['name'] = package_name
 config['package']['version'] = version
 
+description = readInput('Enter description')
+
 git_url = get_git_url()
 if git_url:
     config['package']['repository']['url'] = git_url
@@ -170,13 +172,15 @@ if not os.path.exists(index_path):
         pass
 
 if not os.path.exists(readme_path):
-    with open(readme_path, 'w') as f:
-        f.write(
-'# ' + package_name + '''
+    readme = '# ' + package_name
 
-## Install
-```bash
-npm i ''' + package_name + '\n```')
+    if description:
+        readme += '\n## Description\n' + description
+    
+    readme += '\n## Install\n```bash\nnpm i ' + package_name + '\n```'
+
+    with open(readme_path, 'w') as f:
+        f.write(readme)
 
 create_gitignore(gitignore_path, config['.gitignore'])
 create_gitignore(npmgitignore_path, config['.npmgitignore'])
